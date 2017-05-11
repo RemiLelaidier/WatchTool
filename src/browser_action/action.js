@@ -26,6 +26,7 @@ function loadWSList() {
 }
 
 function fillWSTable(wsList) {
+    var iconProvider = "http://www.google.com/s2/favicons?domain="
     var pathImg = "../../icons/"
     var wsTable = document.getElementById('wsTable')
     for(var i = 0, len = Object.keys(wsList).length; i < len; i++){
@@ -33,7 +34,7 @@ function fillWSTable(wsList) {
 
         tdI = document.createElement('td')
         img = document.createElement('img')
-        img.src = pathImg + wsList[i][0].image
+        img.src = iconProvider + wsList[i][0].url
         tdI.appendChild(img)
         tr.appendChild(tdI)
 
