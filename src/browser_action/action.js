@@ -12,6 +12,7 @@ function loadWSList() {
 function fillWSTable(wsList) {
     var iconProvider = "http://www.google.com/s2/favicons?domain="
     var wsTable = document.getElementById('wsTable')
+    wsTable.innerHTML = ""
     for(var i = 0, len = localStorage.getItem("sizeWSList"); i < len; i++){
         tr = document.createElement('tr')
 
@@ -51,12 +52,11 @@ function noWS() {
  * @param url
  */
 function enregistrer(name, url) {
-    console.log(name +" : " + url)
     var json = loadWSList()
-    var len = localStorage.getItem("sizeWSList")
+    var len = parseInt(localStorage.getItem("sizeWSList"))
     if (len === null || json == null){
         json = {
-            0 : {
+            "0" : {
                 "url" : url,
                 "nom" : name
             }
@@ -64,15 +64,13 @@ function enregistrer(name, url) {
         len = 0
     }
     else {
-        json = JSON.parse(json)
+        console.log(json)
         newElem = {
             "url" : url,
             "nom" : name
         }
-        json.push(len, newElem)
+        json[len] = newElem
     }
-
-    console.log(json)
     localStorage.setItem("WS", JSON.stringify(json))
     localStorage.setItem("sizeWSList", len + 1)
 }
@@ -83,7 +81,6 @@ function enregistrer(name, url) {
 window.onload = function start() {
     //localStorage.clear()
     if(localStorage.getItem("sizeWSList") !== null){
-        console.log(loadWSList())
         fillWSTable(loadWSList())
     }
     else{
