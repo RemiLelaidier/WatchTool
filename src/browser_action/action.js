@@ -52,6 +52,7 @@ function noWS() {
  * @param url
  */
 function enregistrer(name, url) {
+    getHash(url)
     var json = loadWSList()
     var len = parseInt(localStorage.getItem("sizeWSList"))
     if (len === null || json == null){
@@ -64,7 +65,6 @@ function enregistrer(name, url) {
         len = 0
     }
     else {
-        console.log(json)
         newElem = {
             "url" : url,
             "nom" : name
@@ -73,6 +73,43 @@ function enregistrer(name, url) {
     }
     localStorage.setItem("WS", JSON.stringify(json))
     localStorage.setItem("sizeWSList", len + 1)
+}
+
+/**
+ * Obtenir le hash d'un flux RSS
+ * @param url
+ */
+function getHash(url) {
+    console.log(getRSSUrl(url))
+}
+
+/**
+ * Recupere l'URL du flux RSS de la page url
+ * @param url
+ */
+function getRSSUrl(url) {
+    if (window.XMLHttpRequest) {
+        xmlhttp=new XMLHttpRequest();
+    }
+    else {
+        xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+    }
+    xmlhttp.onreadystatechange=function() {
+        if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+            var parser = new DOMParser()
+            var dom = parser.parseFromString(xmlhttp.responseText, "text/xml")
+            var links = dom.getElementsByTagName("link")
+
+            for(var i = 0; i < links.length; i++){
+                if (links[i].getAttribute("type") === "application/rss+xml"){
+                    return links[i].getAttribute("href")
+                }
+            }
+        }
+    }
+    xmlhttp.open("GET", url, false );
+    xmlhttp.send();
+    return xmlhttp.onreadystatechange()
 }
 
 /**
@@ -94,6 +131,7 @@ window.onload = function start() {
 document.getElementById('submit').onclick = function () {
     var name = document.getElementById("name").value
     var url = document.getElementById("url").value
+
     enregistrer(name, url)
     fillWSTable(loadWSList())
 }
