@@ -80,7 +80,8 @@ function enregistrer(name, url) {
  * @param url
  */
 function getHash(url) {
-    console.log(getRSSUrl(url))
+    var rss = getRSS(getRSSUrl(url))
+    console.log(rss)
 }
 
 /**
@@ -88,6 +89,36 @@ function getHash(url) {
  * @param url
  */
 function getRSSUrl(url) {
+    var parser = new DOMParser()
+    var dom = parser.parseFromString(ajaxRequest(url), "text/xml")
+    var links = dom.getElementsByTagName("link")
+
+    for(var i = 0; i < links.length; i++){
+        if (links[i].getAttribute("type") === "application/rss+xml"){
+            return links[i].getAttribute("href")
+        }
+    }
+}
+
+/**
+ * Recupere XML du flux RSS
+ * @param rssUrl
+ */
+function getRSS(rssUrl) {
+    console.log(rssUrl)
+    YUI().use('yql', function(Y) {
+        Y.YQL('select * from rss where url=' + "http:" + rssUrl, function(r) {
+            console.log(r)
+        });
+    });
+}
+
+/**
+ * Execute une requete AJAX sur l'URL
+ * @param url
+ * @returns {*}
+ */
+function ajaxRequest(url) {
     if (window.XMLHttpRequest) {
         xmlhttp=new XMLHttpRequest();
     }
@@ -96,19 +127,11 @@ function getRSSUrl(url) {
     }
     xmlhttp.onreadystatechange=function() {
         if (xmlhttp.readyState==4 && xmlhttp.status==200) {
-            var parser = new DOMParser()
-            var dom = parser.parseFromString(xmlhttp.responseText, "text/xml")
-            var links = dom.getElementsByTagName("link")
-
-            for(var i = 0; i < links.length; i++){
-                if (links[i].getAttribute("type") === "application/rss+xml"){
-                    return links[i].getAttribute("href")
-                }
-            }
+            return xmlhttp.responseText
         }
     }
     xmlhttp.open("GET", url, false );
-    xmlhttp.send();
+    xmlhttp.send(null);
     return xmlhttp.onreadystatechange()
 }
 
