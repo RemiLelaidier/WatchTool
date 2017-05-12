@@ -52,7 +52,7 @@ function noWS() {
  * @param url
  */
 function enregistrer(name, url) {
-    getHash(url)
+    getLastRssEntry(url)
     var json = loadWSList()
     var len = parseInt(localStorage.getItem("sizeWSList"))
     if (len === null || json == null){
@@ -79,9 +79,10 @@ function enregistrer(name, url) {
  * Obtenir le hash d'un flux RSS
  * @param url
  */
-function getHash(url) {
-    var rss = getRSS(getRSSUrl(url))
-    console.log(rss)
+function getLastRssEntry(url) {
+    var rssUrl = getRSSUrl(url)
+    var rss = getRSS(rssUrl)
+    return rss['items'][0]['pubDate']
 }
 
 /**
@@ -89,15 +90,10 @@ function getHash(url) {
  * @param url
  */
 function getRSSUrl(url) {
-    var parser = new DOMParser()
-    var dom = parser.parseFromString(ajaxRequest(url), "text/xml")
-    var links = dom.getElementsByTagName("link")
+    var parser = new DOMParser();
+    var dom = parser.parseFromString(ajaxRequest(url), "text/xml");
 
-    for(var i = 0; i < links.length; i++){
-        if (links[i].getAttribute("type") === "application/rss+xml"){
-            return links[i].getAttribute("href")
-        }
-    }
+    return link = dom.querySelector('link[type=\'application/rss+xml\']').getAttribute('href');
 }
 
 /**
@@ -105,34 +101,36 @@ function getRSSUrl(url) {
  * @param rssUrl
  */
 function getRSS(rssUrl) {
-    console.log(rssUrl)
-    YUI().use('yql', function(Y) {
-        Y.YQL('select * from rss where url=' + "http:" + rssUrl, function(r) {
-            console.log(r)
-        });
-    });
+    var finalUrl = "https://api.rss2json.com/v1/api.json?rss_url=http:"+rssUrl;
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function(){
+        if(this.readyState == 4){
+            if(this.status == 200){
+                return JSON.parse(xhr.responseText);
+            }
+        }
+    }
+    xhr.open("GET", finalUrl, false);
+    xhr.send(null);
+    return xhr.onreadystatechange();
 }
 
 /**
  * Execute une requete AJAX sur l'URL
  * @param url
- * @returns {*}
+ @returns {}
  */
 function ajaxRequest(url) {
-    if (window.XMLHttpRequest) {
-        xmlhttp=new XMLHttpRequest();
-    }
-    else {
-        xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
-    }
-    xmlhttp.onreadystatechange=function() {
-        if (xmlhttp.readyState==4 && xmlhttp.status==200) {
-            return xmlhttp.responseText
+    xmlhttp = new XMLHttpRequest();
+    xmlhttp.onreadystatechange = function() {
+        if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+            return xmlhttp.responseText;
         }
     }
-    xmlhttp.open("GET", url, false );
+    xmlhttp.open("GET", url, false);
     xmlhttp.send(null);
-    return xmlhttp.onreadystatechange()
+
+    return xmlhttp.onreadystatechange();
 }
 
 /**
